@@ -1,0 +1,12 @@
+# E1 at physical K, dt = 1 ms (1 kHz sample rate, a slow control loop): K = 10^8 ticks per step at 10 ps; event
+# budget 10^6 transitions per step (event_rate 1e9/s). See e1_phys.yaml.
+base: e1_phys.yaml
+name: e1_phys_dt1ms
+tasks:
+  dt: 1.0e-3
+archive:
+  axes:
+    - {name: n_gates, lo: 0, hi: 128, bins: 8, log: true}
+    - {name: cycle_frac, lo: 0.0, hi: 1.0, bins: 4}
+    - {name: events_per_step, lo: 0, hi: 100000000, bins: 8, source: behavior, log: true}
+    - {name: duty_mean, lo: 0.0, hi: 1.0, bins: 4, source: behavior}

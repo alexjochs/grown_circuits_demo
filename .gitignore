@@ -1,0 +1,9 @@
+.venv/
+.work/
+__pycache__/
+*.egg-info/
+*.so
+runs/
+logs/*
+!logs/.gitkeep
+build/

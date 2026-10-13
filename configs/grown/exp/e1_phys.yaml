@@ -1,0 +1,37 @@
+# E1 at physical K (docs/grown_time.md): the E1 memory tasks with a physical control step. The task owns dt; the
+# substrate tick is the PDK's (10 ps); K = round(dt / tick) is derived, here dt = 1 us (a 1 MHz sample rate: a serial
+# line, an encoder or tachometer line, a time-to-digital converter) so K = 10^5 ticks per step and a SKY130 gate
+# (30-120 ps, [3, 12] ticks) is 1/8333 to 1/33333 of a step. Holding a bit across steps now needs bistability (a
+# latch or a loop that settles), not a delay line. Variants: e1_phys_dt100us.yaml (10 kHz, K = 10^7) and
+# e1_phys_dt1ms.yaml (1 kHz, K = 10^8).
+#
+# Energy envelope: event_rate 1e9 transitions per second, i.e. about 10 uW at ~10 fJ per SKY130 hd transition at
+# 1.8 V; per step that is event_rate * dt = 1000 gate transitions at dt = 1 us. A free-running 3-gate ring
+# oscillator at these delays makes ~10^10 transitions per second and fails it. Lanes over budget in any step are
+# scored as failed (budget_mode fail: error 1, fitness -1) and stop being simulated.
+#
+# Substrate: freerun's stepping adapter (event streams in, high time and end values out, chunked budget checks).
+# `--set substrate.name=freerun_events` runs the reference wrapper (grown.sim.freerun_events) instead: the same
+# outputs, events and over-budget flags (tests/grown/test_time.py).
+base: e1_base.yaml
+name: e1_phys
+substrate: {name: freerun, backend: cpu, threads: 1, stimulus: step}
+time:
+  tick: 1.0e-11           # 10 ps
+  modulator_hz: 1.0e+7    # sigma-delta inputs (none in these tasks)
+  event_budget: null
+  event_rate: 1.0e+9      # transitions per second: 1000 per step at 1 us
+  budget_mode: fail
+  legacy_K: null          # physical: K derived from dt
+tasks:
+  dt: 1.0e-6              # every task (catalog entries and the counters in tasks.extra) sampled at 1 MHz
+search:
+  operator:
+    delay_range: [3, 12]  # SKY130 hd nominal 30-120 ps at 10 ps per tick
+    delay_clamp: true
+archive:
+  axes:
+    - {name: n_gates, lo: 0, hi: 128, bins: 8, log: true}
+    - {name: cycle_frac, lo: 0.0, hi: 1.0, bins: 4}
+    - {name: events_per_step, lo: 0, hi: 100000, bins: 8, source: behavior, log: true}
+    - {name: duty_mean, lo: 0.0, hi: 1.0, bins: 4, source: behavior}

@@ -1,0 +1,4 @@
+# E0: the synchronous stand-in (unit delays, compiled C kernel on the CPU).
+base: e0_base.yaml
+name: e0_sync
+substrate: {name: sync}

@@ -1,0 +1,5 @@
+# e1_phys_slow at dt = 100 us (K = 10^7): a step is long enough for one slow element's delay to fit many times.
+base: e1_phys_slow.yaml
+name: e1_phys_slow_dt100us
+tasks:
+  dt: 1.0e-4

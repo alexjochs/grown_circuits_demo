@@ -1,0 +1,6 @@
+# E2 condition (a): selection on the idealized twin; devices are still simulated for the gap and energy axes.
+base: e2_base.yaml
+name: e2_twin
+substrate:
+  physical:
+    select: twin

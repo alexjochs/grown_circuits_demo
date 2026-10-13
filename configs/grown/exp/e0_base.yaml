@@ -1,0 +1,18 @@
+# LEGACY TIME MODEL (time.legacy_K = 8, inherited from signal_small.yaml): reproduces the E0 runs of 2026-10-10.
+# A control step of 8 ticks is 80 ps; E0's memory-task results are superseded (NOTES.md 2026-10-10 correction).
+#
+# E0, substrate sanity (docs/experiments.md): signal_small (7 tasks, K = 8, 1000 generations x 64 edits, DAgger
+# every 100, threshold blend) on three substrates. This file is what the five E0 conditions share; each condition
+# file overrides the substrate and the delay scale only.
+#
+# delay_clamp keeps every arc and delay element inside delay_range through ADJUST moves, so the delay scale is a
+# fixed property of the condition: [1, 1] is exactly the stand-in's semantics (stand-in and freerun-unit must give
+# bit-identical archives at the same seed), [3, 12] is the SKY130 nominal range at 10 ps per tick (see e0_fr_sky130_*).
+base: ../signal_small.yaml
+name: e0_base
+workers: 7                # one task per worker process; results do not depend on the worker count
+search:
+  operator:
+    delay_range: [1, 1]
+    delay_clamp: true
+status_every: 50

@@ -1,0 +1,7 @@
+# E0: freerun with SKY130-nominal delays ([3, 12] ticks at 10 ps per tick, see e0_fr_sky130_cpu.yaml), CUDA backend.
+base: e0_base.yaml
+name: e0_fr_sky130_cuda
+substrate: {name: freerun, backend: cuda}
+search:
+  operator:
+    delay_range: [3, 12]

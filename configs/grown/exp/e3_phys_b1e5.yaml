@@ -1,0 +1,5 @@
+# E3 at physical K, budget 1e5 edits per task (1562 generations x 64). See e3_phys_base.yaml.
+base: e3_phys_base.yaml
+name: e3_phys_b1e5
+search:
+  generations: 1562

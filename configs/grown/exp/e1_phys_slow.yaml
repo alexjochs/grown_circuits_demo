@@ -1,0 +1,33 @@
+# E1-phys with a slow delay element in the vocabulary (docs/roadmap.md S2b; grown.sim.slow; freerun SPEC §14 and
+# docs/slow_delay.md): the free-running condition of e1_phys (no strobe, dt = 1 us, K = 10^5), but no energy envelope
+# (budget_mode ignore: the 10 uW rate is logged only) and no compute cap. ADD_NODE can add a slow delay element (a
+# current-starved stage characterized in SKY130: delays from ~1 ns to ~100 us at one of the table's bias levels,
+# with its static power and energy per transition); the operator moves its level, never its delays. Energy per
+# decision is a descriptor (events_per_step, log); the slow elements' static power is logged per circuit
+# (behaviour slow_static_w). A first look: 1 seed, 400 generations x 64 edits per task.
+# Variant: e1_phys_slow_dt100us.yaml (dt = 100 us, K = 10^7).
+base: e1_phys.yaml
+name: e1_phys_slow
+workers: 1
+substrate:
+  name: freerun
+  backend: cpu
+  threads: 0
+  stimulus: multistep
+  placement: {mode: cpu, probe_steps: 2}
+time:
+  event_rate: 1.0e+9      # logged reference (10 uW)
+  budget_mode: ignore
+search:
+  generations: 400
+  overlap: false
+  operator:
+    slow_weight: 0.1      # next to kind_weights (0.8 gate, 0.1 delay, 0.1 wire)
+archive:
+  axes:
+    - {name: n_gates, lo: 0, hi: 128, bins: 8, log: true}
+    - {name: cycle_frac, lo: 0.0, hi: 1.0, bins: 4}
+    - {name: events_per_step, lo: 1, hi: 100000000, bins: 8, source: behavior, log: true}
+    - {name: duty_mean, lo: 0.0, hi: 1.0, bins: 4, source: behavior}
+  save_every: 50
+  save_seconds: 1800

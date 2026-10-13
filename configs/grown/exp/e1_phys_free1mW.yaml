@@ -1,0 +1,10 @@
+# E1-phys arm "free-running, 1 mW" (docs/experiments.md, E1-phys: strobe vs free-running): e1_phys (dt = 1 us,
+# K = 10^5, SKY130 delays, no strobe: inputs are sample-and-hold) with the envelope raised 100x, event_rate 1e11
+# transitions/s (~1 mW at ~10 fJ per transition): 10^5 transitions per step, one per tick, so a few gate rings (each
+# ~0.8-3.3e10 transitions/s, 0.08-0.33 per tick) are affordable. The search has to evolve its own timebase to count
+# steps. Oscillating lanes pay their real events (~10^4-10^5 simulated events per lane-step), so this arm is the
+# expensive one. 100 us variant: e1_phys_free1mW_dt100us.yaml.
+base: e1_phys.yaml
+name: e1_phys_free1mW
+time:
+  event_rate: 1.0e+11     # 100000 transitions per step at 1 us

@@ -1,0 +1,4 @@
+# E0: freerun, every arc delay 1 tick (the stand-in's semantics), CPU backend, one thread per worker.
+base: e0_base.yaml
+name: e0_fr_unit_cpu
+substrate: {name: freerun, backend: cpu, threads: 1}

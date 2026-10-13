@@ -1,0 +1,5 @@
+# E3 budget 1e5 edits per task (1562 generations x 64).
+base: e3_base.yaml
+name: e3_b1e5
+search:
+  generations: 1562

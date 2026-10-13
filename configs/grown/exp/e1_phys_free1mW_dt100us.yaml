@@ -1,0 +1,13 @@
+# e1_phys_free1mW.yaml at dt = 100 us (10 kHz sample rate): K = 10^7 ticks per step, budget 10^7 transitions per
+# step (event_rate 1e11 x 100 us). An oscillating lane costs up to ~10^7 simulated events per step, 100x the 1 us
+# arm: expensive on CPU (see NOTES.md). Axes as e1_phys_dt100us.yaml.
+base: e1_phys_free1mW.yaml
+name: e1_phys_free1mW_dt100us
+tasks:
+  dt: 1.0e-4
+archive:
+  axes:
+    - {name: n_gates, lo: 0, hi: 128, bins: 8, log: true}
+    - {name: cycle_frac, lo: 0.0, hi: 1.0, bins: 4}
+    - {name: events_per_step, lo: 0, hi: 10000000, bins: 8, source: behavior, log: true}
+    - {name: duty_mean, lo: 0.0, hi: 1.0, bins: 4, source: behavior}

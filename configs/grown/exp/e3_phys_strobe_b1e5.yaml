@@ -1,0 +1,7 @@
+# E3-phys with the sample-clock strobe (docs/grown_time.md: one more input wire, high for one modulator period, 100 ns,
+# from every step boundary), as e1_phys_strobe.yaml does for E1-phys. Otherwise e3_phys_b1e5.yaml (no envelope,
+# no cap, energy axis). The strobe changes the task interface and uids.
+base: e3_phys_b1e5.yaml
+name: e3_phys_strobe_b1e5
+time:
+  strobe: true

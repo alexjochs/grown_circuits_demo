@@ -1,0 +1,70 @@
+# E4, controls at matched tasks (docs/experiments.md): what every exp/e4_* config shares (kept outside exp/, which
+# holds search configs only). Each e4_<exp>.yaml names the
+# search config whose tasks, data protocol (training episodes incl. every DAgger round, fresh episodes, metric,
+# solved threshold), K and substrate it matches as its `base`, and adds this `e4` section on top
+# (scripts/grown_baselines.py e4; grown.baselines.protocol).
+#
+# Controls: DLGN feedforward and recurrent (learned-sparse wiring, plus fixed-wiring variants), trained by backprop on
+# the relaxed network and exported as unit-delay circuits; the least-squares linear control compiled to a thresholded
+# circuit. Every unit-delay export is evaluated on fresh episodes on the ideal substrate (stand-in = freerun unit) and
+# on the search's own substrate with its arcs redrawn in the search's delay range ([3, 12] ticks at 10 ps per tick).
+# Retimed exports (sky_*, linear_retimed) are built for the search's substrate and scored on it at their own delays.
+# The selected circuits (best, train-selected, smallest solving, per control) and the search's best elites are
+# measured by grown.sim.physical: twin vs a device population (corner box, die scale, 5 % mismatch, 1 % jitter),
+# energy per decision. timing auto: unit-delay circuits are mapped to SKY130 cells (timing cells: the uniform twin is
+# the stand-in, the step K mean cell delays); every other circuit runs on its own arcs at 10 ps per tick (timing
+# arcs: the twin is exactly the search substrate, devices are grown.sim.devices' per-arc variation, energy from the
+# cells each gate maps to). Units measured before the timing fix: `--stage physical` re-measures them.
+e4:
+  seeds: [0, 1, 2]
+  dlgn:
+    steps: 600
+    lr: 0.05
+    batch: 8
+    max_features: 24          # input-history taps: ceil(memory_depth) steps, capped at 24 input values
+    max_steps: 1024
+    grid:
+      - {name: ff_d1, widths: [], learn_wiring: 8}
+      - {name: ff_d2, widths: [16], learn_wiring: 8}
+      - {name: ff_d3, widths: [64, 32], learn_wiring: 8}
+      - {name: ff_d1_taps, widths: [], taps: mem, learn_wiring: 8}
+      - {name: ff_d2_taps, widths: [32], taps: mem, residual_init: 2.0, learn_wiring: 8}
+      - {name: ff_d3_taps, widths: [64, 32], taps: mem, residual_init: 2.0, learn_wiring: 8}
+      - {name: ff_d2_taps_fixed, widths: [32], taps: mem, residual_init: 2.0, learn_wiring: 0}
+      - {name: rec_d1_s4, widths: [], n_state: 4, residual_init: 3.0, learn_wiring: 8}
+      - {name: rec_d2_s8, widths: [32], n_state: 8, residual_init: 3.0, learn_wiring: 8}
+      - {name: rec_d2_s8_st, widths: [32], n_state: 8, residual_init: 3.0, st_state: true, learn_wiring: 8}
+      - {name: rec_d3_s16, widths: [64, 32], n_state: 16, residual_init: 3.0, learn_wiring: 8}
+      - {name: rec_d2_s8_fixed, widths: [32], n_state: 8, residual_init: 3.0, learn_wiring: 0}
+      - {name: rec_d2_s6_taps, widths: [32], n_state: 6, taps: mem, residual_init: 3.0, learn_wiring: 8}
+      - {name: ff_d2_ticks, widths: [32], in_ticks: K, residual_init: 2.0, learn_wiring: 8, per_tick_only: true}
+      - {name: rec_d2_s8_ticks, widths: [32], n_state: 8, in_ticks: K, residual_init: 3.0, learn_wiring: 8, per_tick_only: true}
+      # retimed for the search substrate: every gate 3 ticks (the fastest arc in [3, 12]), registers and taps built
+      # from delay elements inside [3, 12] so the clocked semantics are exact there (depth 1 recurrent, depth <= 2
+      # feedforward at K = 8)
+      - {name: sky_ff_d1, widths: [], gate_delay: 3, learn_wiring: 8}
+      - {name: sky_ff_d2, widths: [16], gate_delay: 3, learn_wiring: 8}
+      - {name: sky_ff_d1_taps, widths: [], taps: mem, gate_delay: 3, learn_wiring: 8}
+      - {name: sky_ff_d2_taps, widths: [32], taps: mem, residual_init: 2.0, gate_delay: 3, learn_wiring: 8}
+      - {name: sky_rec_d1_s4, widths: [], n_state: 4, residual_init: 3.0, gate_delay: 3, learn_wiring: 8}
+      - {name: sky_rec_d1_s8, widths: [], n_state: 8, residual_init: 3.0, gate_delay: 3, learn_wiring: 8}
+      - {name: sky_rec_d1_s6_taps, widths: [], n_state: 6, taps: mem, residual_init: 3.0, gate_delay: 3, learn_wiring: 8}
+  linear:
+    max_inputs: 6
+    frac_bits: 4
+    max_features: 24
+    retimed_gate_delay: 3
+  reannotate_draws: 4
+  delay_range: [3, 12]        # used only when the search config's own range is unit
+  check_freerun_unit: true
+  physical:
+    timing: auto               # auto | arcs | cells (grown.baselines.protocol.timing_for)
+    subticks: 1                # timing arcs: freerun ticks per 10 ps tick (1 = the search's own resolution)
+    devices: 16
+    presets: [corners, tt]
+    seed: 1
+    jitter_rel: 0.01
+    mismatch_sigma: 0.05
+    scale_sigma: 0.03
+    threads: 1
+    select: ["dlgn:best", "dlgn:smallest", "dlgn_retimed:best", "dlgn_search:best", "linear:best", "linear_retimed:best"]

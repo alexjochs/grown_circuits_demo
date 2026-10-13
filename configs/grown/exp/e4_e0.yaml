@@ -1,0 +1,10 @@
+# E4 on E0's tasks: signal_small (7 tasks, K = 8), the data protocol of the E0 runs (2 episodes x 256 steps + 9
+# DAgger rounds x 1 episode over 1000 generations; 4 fresh episodes x 256), re-annotation on E0's SKY130 substrate
+# (freerun CPU, arcs in [3, 12] ticks). Compared with every E0 condition; the e0_fr_sky130_cpu elites are measured
+# physically like the controls.
+base: e0_fr_sky130_cpu.yaml
+name: e4_e0
+e4_base: ../e4_controls.yaml
+e4:
+  compare: [e0_sync, e0_fr_unit_cpu, e0_fr_sky130_cpu]
+  search_physical: [e0_fr_sky130_cpu, e0_sync]

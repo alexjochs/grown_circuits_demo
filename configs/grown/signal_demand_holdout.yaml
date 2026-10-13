@@ -1,0 +1,34 @@
+# Train on a box of demand tags, evaluate on its complement (grown.tasks.demand_holdout).
+# LEGACY TIME MODEL (time.legacy_K = 8, the stand-in convention; see signal_small.yaml).
+name: signal_demand_holdout
+seed: 0
+workers: 4
+substrate: {name: sync}
+time: {tick: 1.0e-11, legacy_K: 8}
+tasks:
+  source: demand_holdout
+  family: signal
+  family_seed: 1
+  n_pool: 64
+  box:                    # inside: short memory, step-grid timing
+    memory_depth: [1, 8]
+    timing_precision: [0, 1]
+  max_train: 16
+  max_heldout: 16
+  horizon: 1024
+data:
+  episodes: 2
+  horizon: 256
+  eval_episodes: 2
+  eval_horizon: 256
+search:
+  generations: 100
+  batch: 32
+  n_init: 32
+  operator: {max_nodes: 64, arity_max: 4}
+archive:
+  save_every: 50
+objective: {schedule: imitation}
+dagger: {every: 0}
+solved: 0.01
+status_every: 10

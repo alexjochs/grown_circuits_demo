@@ -1,0 +1,25 @@
+[project]
+name = "grown-circuits"
+version = "0.1.0"
+description = "Teacher-matched quality-diversity search for control circuits on the freerun gate-level simulator"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [{ name = "Alex Ochs" }]
+# freerun (the simulator) is vendored in freerun/ and installed from there: pip install -e ./freerun -e .
+dependencies = ["jax", "numpy", "pyyaml", "freerun"]
+
+[project.optional-dependencies]
+cuda = ["jax[cuda12]"]     # only the learned editor's training uses an accelerator through jax; the search does not
+logs = ["pyarrow"]         # parquet edit logs (falls back to npz chunks without it)
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"grown.tasks" = ["assets/*.xml"]
+"grown.sim" = ["*.json"]

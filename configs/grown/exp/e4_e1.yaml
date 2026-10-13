@@ -1,0 +1,10 @@
+# E4 on E1's tasks: the 7 memory tasks incl. counters mod 2-5 (tasks.extra of e1_base), K = 8, the E1 data protocol
+# (2 episodes x 256 steps + 15 DAgger rounds x 1 episode over 1600 generations; 4 fresh episodes x 256),
+# re-annotation on E1's SKY130 substrate (freerun CPU, arcs in [3, 12] ticks). Compared with the K = 8 column of every
+# E1 delay scale and with unit K = 2 (the best memory condition); e1_sky130_k8 elites are measured physically.
+base: e1_sky130_k8.yaml
+name: e4_e1
+e4_base: ../e4_controls.yaml
+e4:
+  compare: [e1_unit_k8, e1_d1_8_k8, e1_sky130_k8, e1_unit_k2]
+  search_physical: [e1_sky130_k8]

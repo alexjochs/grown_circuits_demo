@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "freerun"
+dynamic = ["version"]
+description = "Batched event-driven simulation of free-running (clockless, cyclic) gate-level circuits"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [{ name = "Alex Ochs" }]
+keywords = ["gate-level simulation", "asynchronous circuits", "event-driven simulation", "inertial delay", "GPU",
+            "CUDA", "Liberty", "SKY130", "ring oscillator"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: C++",
+  "Environment :: GPU :: NVIDIA CUDA",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+]
+dependencies = ["numpy>=1.24"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-xdist>=3", "hypothesis>=6"]
+
+[tool.setuptools.dynamic]
+version = { attr = "freerun.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["python"]
+
+[tool.setuptools.package-data]
+freerun = ["_lib/*.so"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
+markers = [
+  "oracle: cross-checks against external HDL simulators in tools/ (skipped if a tool is missing)",
+  "slow: long-running tests",
+  "spice: transistor-level comparisons with ngspice (slow)",
+]

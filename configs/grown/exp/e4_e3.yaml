@@ -1,0 +1,14 @@
+# E4 on E3's tasks: signal_family at family_seed 0, 32 train tasks plus the 8 interp and 8 extrap held-out tasks
+# (Family.splits), K = 8, the E3 data protocol (2 episodes x 256 steps, no DAgger; 2 fresh episodes x 256),
+# re-annotation on E3's SKY130 substrate (freerun CPU, arcs in [3, 12] ticks). The controls are trained on every
+# task, held-out ones included (their own fit), and also transferred zero-shot from the training tasks' circuits as
+# grown_eval transfers elites. Compared with the E3 budgets; the e3_b1e6 elites (b1e5 if absent) are measured
+# physically.
+base: e3_base.yaml
+name: e4_e3
+e4_base: ../e4_controls.yaml
+search:
+  generations: 15625        # e3_b1e6's budget; it changes nothing here (no DAgger), recorded for the record
+e4:
+  compare: [e3_b1e4, e3_b1e5, e3_b1e6]
+  search_physical: [e3_b1e6, e3_b1e5]

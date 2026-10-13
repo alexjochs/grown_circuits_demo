@@ -1,0 +1,20 @@
+# LEGACY TIME MODEL (time.legacy_K = 8, 80 ps control steps): reproduces the E3 runs submitted 2026-10-10 from the
+# pinned checkout. The physical-K scaling point is e3_phys_*.yaml.
+#
+# E3, first scaling point (docs/experiments.md): the 32-task signal family (interp/extrap held out by
+# Family.splits), uniform operator only, imitation objective, no DAgger, on freerun with SKY130-nominal delays
+# ([3, 12] ticks at 10 ps per tick, K = 8, delay_clamp) since E0/E1 showed that is where memory tasks are
+# learnable. Each budget file sets search.generations so that generations x batch = edits per task.
+base: ../signal_family.yaml
+name: e3_base
+workers: 7
+substrate: {name: freerun, backend: cpu, threads: 1}
+time: {tick: 1.0e-11, legacy_K: 8}
+search:
+  batch: 64
+  operator:
+    delay_range: [3, 12]
+    delay_clamp: true
+archive:
+  save_every: 500
+status_every: 100

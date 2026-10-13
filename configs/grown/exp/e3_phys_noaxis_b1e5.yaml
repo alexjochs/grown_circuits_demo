@@ -1,0 +1,9 @@
+# E3-phys without the energy axis: as e3_phys_b1e5.yaml (no envelope, no cap) with the archive's events_per_step axis
+# removed (events per step are still logged per lane and per generation). See e3_phys_base.yaml.
+base: e3_phys_b1e5.yaml
+name: e3_phys_noaxis_b1e5
+archive:
+  axes:
+    - {name: n_gates, lo: 0, hi: 128, bins: 8, log: true}
+    - {name: cycle_frac, lo: 0.0, hi: 1.0, bins: 4}
+    - {name: duty_mean, lo: 0.0, hi: 1.0, bins: 4, source: behavior}

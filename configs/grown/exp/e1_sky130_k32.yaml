@@ -1,0 +1,7 @@
+# E1 grid point (LEGACY time model, see e1_base.yaml): SKY130 hd nominal 30-120 ps at 10 ps per tick; K = 32 ticks per control step.
+base: e1_base.yaml
+name: e1_sky130_k32
+time: {tick: 1.0e-11, legacy_K: 32}   # LEGACY: K fixed (old tasks.K)
+search:
+  operator:
+    delay_range: [3, 12]

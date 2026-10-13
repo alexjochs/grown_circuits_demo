@@ -1,0 +1,18 @@
+# signal_small on the freerun substrate (event-driven, per-arc delays): the swap is this file.
+# Mutations draw delays in [1, K] ticks, so a single DELAY token can hold a bit for one control step.
+# Needs a freerun whose CPU library matches its Python package (FREERUN_HOME, or FREERUN_LIBDIR for an
+# out-of-tree build).
+base: signal_small.yaml
+name: signal_small_freerun
+substrate:
+  name: freerun
+  backend: cpu
+  threads: 1
+tasks:
+  names: [xor2, detect_1011, divide_by_3, and2_delay3]
+search:
+  generations: 300
+  operator:
+    delay_range: [1, 8]
+dagger:
+  every: 0

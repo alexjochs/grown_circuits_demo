@@ -1,0 +1,12 @@
+# E1-phys arm "strobe" (docs/experiments.md, E1-phys: strobe vs free-running): e1_phys (dt = 1 us, K = 10^5, SKY130
+# delays, 10 uW envelope: event_rate 1e9 transitions/s, 1000 per step, over budget = failed) plus the sample clock.
+# Every task gets one more input wire, the last: a strobe that rises at each step boundary (t = s*K; at t = 0 that is
+# its power-up value) and falls one modulator period later (strobe_width null: 100 ns = 10^4 ticks at 10 MHz), as an
+# ADC's conversion strobe or a serial link's bit clock. 2 input events per step; the circuit may use it or ignore it.
+# The strobe is part of the task uid (a different interface), so episodes differ from the other arms' (each arm is
+# scored against its own trivial error). 100 us variant: e1_phys_strobe_dt100us.yaml.
+base: e1_phys.yaml
+name: e1_phys_strobe
+time:
+  strobe: true
+  strobe_width: null      # one modulator period (100 ns)

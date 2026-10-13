@@ -1,0 +1,6 @@
+# E2 condition (b): selection on a device drawn per (circuit, episode) lane (corner box, mismatch, jitter).
+base: e2_base.yaml
+name: e2_population
+substrate:
+  physical:
+    select: device

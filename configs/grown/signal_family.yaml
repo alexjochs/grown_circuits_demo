@@ -1,0 +1,36 @@
+# 32 tasks sampled from the signal family; interp / extrap held out with Family.splits. A short run.
+# LEGACY TIME MODEL (time.legacy_K = 8, the stand-in convention; see signal_small.yaml).
+name: signal_family
+seed: 0
+workers: 4
+substrate: {name: sync}
+time: {tick: 1.0e-11, legacy_K: 8}
+tasks:
+  source: family
+  family: signal
+  kinds: null             # all eleven kinds
+  family_seed: 0
+  n_train: 32
+  n_interp: 8
+  n_extrap: 8
+  horizon: 1024
+data:
+  episodes: 2
+  horizon: 256
+  metric: abs
+  eval_episodes: 2
+  eval_horizon: 256
+search:
+  generations: 100
+  batch: 32
+  sampling: curiosity
+  n_init: 32
+  init_nodes: 8
+  init_arity: [1, 3]
+  operator: {max_nodes: 64, arity_max: 4}
+archive:
+  save_every: 50
+objective: {schedule: imitation}
+dagger: {every: 0}
+solved: 0.01
+status_every: 10

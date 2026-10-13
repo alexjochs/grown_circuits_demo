@@ -1,0 +1,58 @@
+# A handful of signal catalog tasks on the synchronous stand-in substrate: minutes on CPU.
+# Schema: src/grown/config.py. Reproducible from (this file, --seed).
+#
+# LEGACY TIME MODEL: K = 8 ticks per control step whatever the task's dt (time.legacy_K), the pre-2026-10-10
+# convention. It reproduces the old runs (E0, E1, the golden digests of tests/grown/test_perf_equivalence.py) and is
+# the stand-in's smoke test. It is not physical: at 10 ps per tick a step is 80 ps, as fast as a gate. Physical
+# configs derive K = round(dt / tick) (docs/grown_time.md; configs/grown/exp/e1_phys*.yaml).
+name: signal_small
+seed: 0
+workers: 4
+substrate:
+  name: sync              # freerun: {name: freerun, backend: cpu}; set search.operator.delay_range to use delays
+time:
+  tick: 1.0e-11           # 10 ps (only labels the legacy K; K is fixed by legacy_K)
+  legacy_K: 8             # LEGACY: K = 8 for every task, old dt (1 ms) and uids
+tasks:
+  source: catalog
+  names: [xor2, majority3, and2_delay3, detect_1011, divide_by_3, osc_period8, osc_period13]
+  heldout: []
+  horizon: 1024           # task horizon (catalog default); training episodes are cut to data.horizon
+data:
+  episodes: 2
+  horizon: 256
+  metric: abs
+  eval_episodes: 4
+  eval_horizon: 256
+search:
+  generations: 1000
+  batch: 64
+  sampling: curiosity
+  eps: 0.1
+  n_init: 64
+  init_nodes: 8
+  init_arity: [1, 3]
+  init_feedback: true
+  operator:
+    max_nodes: 64
+    arity_max: 4
+    delay_range: [1, 1]
+archive:
+  axes:
+    - {name: n_gates, lo: 0, hi: 128, bins: 8, log: true}
+    - {name: cycle_frac, lo: 0.0, hi: 1.0, bins: 4}
+    - {name: toggle_rate, lo: 0.0, hi: 0.5, bins: 8, source: behavior}
+    - {name: duty_mean, lo: 0.0, hi: 1.0, bins: 4, source: behavior}
+  save_every: 50
+objective:
+  schedule: threshold     # imitation until the best elite's error <= threshold, then blend in task return
+  w_max: 0.25
+  start: 100
+  threshold: 0.05
+dagger:
+  every: 100              # open-loop signal tasks: fresh circuit-driven episodes relabelled by the teacher
+  episodes: 1
+  elites: 4
+  max_episodes: 4
+solved: 0.01
+status_every: 10

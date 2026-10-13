@@ -1,0 +1,67 @@
+# LEGACY TIME MODEL: K = 8 through signal_small.yaml's time.legacy_K (docs/grown_time.md). A physical-K E2 needs
+# tasks.dt and a time block without legacy_K, like e1_phys.yaml.
+# E2, selection under a device population (docs/experiments.md, project.md question 2): signal_small (7 catalog
+# tasks) plus 16 tasks of the signal family (the first 16 training tasks of signal_family.yaml, family_seed 0, defined
+# here by their parameters so this file is self-contained), freerun with SKY130-nominal delays ([3, 12] ticks at
+# 10 ps per tick, E0's convention), K = 8, two conditions at equal compute (same edits, same engine lanes):
+#   e2_twin        the search's fitness reads the idealized twin (the circuit's own nominal delays, tt 25 C 1.80 V,
+#                  no mismatch, no jitter)
+#   e2_population  the fitness reads a device drawn per lane: corner box (ss / tt / ff over temperature and supply,
+#                  freerun's example boxes), die-to-die scale sigma 3 %, per-gate mismatch sigma 5 %, jitter 1 % of
+#                  the gate delay; seeded per (circuit, episode), grown.sim.devices
+# Both conditions run every lane as twin AND device (one engine batch), so both archives get the same descriptors:
+# idealization gap (gap_duty: mean |duty(device) - duty(twin)|) and energy per decision (log10 J) are archive axes
+# next to size and cycle fraction. Budget: 4000 generations x 64 edits = 256k edits per task, 4x E0. One process
+# (workers: 1): grown.search's SearchGroup sends every generation's children of all 23 tasks to the substrate in one
+# evaluate_requests call (two with overlap), which the freerun step path runs as one engine batch on the GPU.
+# Afterwards scripts/grown_e2_eval.py evaluates every elite under a fresh population (another seed) and the twin.
+base: ../signal_small.yaml   # LEGACY time model (time.legacy_K = 8, 80 ps steps), inherited; tasks.K removed
+name: e2_base
+workers: 1
+substrate:
+  name: freerun
+  backend: cuda
+  stimulus: multistep
+  physical:
+    select: device
+    seed: 1
+    preset: corners
+    scale_sigma: 0.03
+    mismatch_sigma: 0.05
+    jitter_rel: 0.01
+    tick: 1.0e-11
+    energy: approx
+    run_devices: true
+tasks:
+  source: catalog
+  names: [xor2, majority3, and2_delay3, detect_1011, divide_by_3, osc_period8, osc_period13, multirate-ae2a1faa, sequence-fbdc3102, oscillator-f857c3e1, counter-07c37d6c, integrator-2fd48d93, sequence-d431b57a, oscillator-10f31bdc, boolean-cec986f1, oscillator-51cdb162, counter-2faf2fcd, boolean-66168bcb, oscillator-25bfa7c6, oscillator-213a9f38, counter-4d65ec48, iir-cbbef91f, multirate-c0e66da0]
+  extra:
+    - {name: multirate-ae2a1faa, kind: multirate, params: {"r_a": 12, "r_b": 37, "op": "product"}}   # 8 in, 1 out
+    - {name: sequence-fbdc3102, kind: sequence, params: {"pattern": [1, 1, 0], "p_plant": 0.0579014350803657, "p_near": 0.26673456061695267}}   # 1 in, 1 out
+    - {name: oscillator-f857c3e1, kind: oscillator, params: {"m": 22, "R": 2, "tol": 0.09725059612343401}}   # 1 in, 1 out
+    - {name: counter-07c37d6c, kind: counter, params: {"n": 3, "out": "binary", "p_pulse": 0.10882781947955891, "p_reset": 0.0021290180543712994}}   # 2 in, 2 out
+    - {name: integrator-2fd48d93, kind: integrator, params: {"g": 0.07104474372297649, "lam": 0.9759959314980011, "p_reset": 0.01895139089495416, "Q": 11, "in_code": "sigma_delta"}}   # 2 in, 1 out
+    - {name: sequence-d431b57a, kind: sequence, params: {"pattern": [0, 1, 1, 0], "p_plant": 0.040927895513532805, "p_near": 0.49243062887290245}}   # 1 in, 1 out
+    - {name: oscillator-10f31bdc, kind: oscillator, params: {"m": 25, "R": 2, "tol": 0.03412281734057619}}   # 1 in, 1 out
+    - {name: boolean-cec986f1, kind: boolean, params: {"delays": [0, 1, 0, 0], "tables": [[1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1], [1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0]]}}   # 4 in, 2 out
+    - {name: oscillator-51cdb162, kind: oscillator, params: {"m": 6, "R": 1, "tol": 0.04608203896284904}}   # 1 in, 1 out
+    - {name: counter-2faf2fcd, kind: counter, params: {"n": 5, "out": "wrap", "p_pulse": 0.29519650331787395, "p_reset": 0.0035058078712090564}}   # 2 in, 1 out
+    - {name: boolean-66168bcb, kind: boolean, params: {"delays": [1, 0, 1], "tables": [[1, 1, 1, 0, 1, 1, 1, 1], [1, 0, 1, 1, 0, 0, 0, 0]]}}   # 3 in, 2 out
+    - {name: oscillator-25bfa7c6, kind: oscillator, params: {"m": 23, "R": 2, "tol": 0.08249892997832409}}   # 1 in, 1 out
+    - {name: oscillator-213a9f38, kind: oscillator, params: {"m": 15, "R": 2, "tol": 0.08080520235560518}}   # 1 in, 1 out
+    - {name: counter-4d65ec48, kind: counter, params: {"n": 4, "out": "binary", "p_pulse": 0.1523523220388304, "p_reset": 0.0030317581435213336}}   # 2 in, 2 out
+    - {name: iir-cbbef91f, kind: iir, params: {"band": "band", "Q": 21, "in_code": "thermometer", "f0": 0.16109797476108392, "Qf": 1.8119138096757528}}   # 20 in, 1 out
+    - {name: multirate-c0e66da0, kind: multirate, params: {"r_a": 11, "r_b": 14, "op": "gate"}}   # 8 in, 1 out
+search:
+  generations: 4000
+  operator:
+    delay_range: [3, 12]
+    delay_clamp: true
+archive:
+  axes:
+    - {name: n_gates, lo: 0, hi: 128, bins: 8, log: true}
+    - {name: cycle_frac, lo: 0.0, hi: 1.0, bins: 4}
+    - {name: log10_energy, lo: -15.5, hi: -11.5, bins: 8, source: behavior}
+    - {name: gap_duty, lo: 0.0, hi: 0.4, bins: 4, source: behavior}
+  save_every: 250
+status_every: 100

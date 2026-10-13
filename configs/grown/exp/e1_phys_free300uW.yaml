@@ -1,0 +1,7 @@
+# E1-phys arm "free-running, 300 uW": as e1_phys_free1mW.yaml with event_rate 3e10 transitions/s (~300 uW): 3x10^4
+# transitions per step at 1 us, about one fast ring (3 gates at 30 ps make ~3.3e10/s) or two to four slow ones.
+# 100 us variant: e1_phys_free300uW_dt100us.yaml.
+base: e1_phys.yaml
+name: e1_phys_free300uW
+time:
+  event_rate: 3.0e+10     # 30000 transitions per step at 1 us

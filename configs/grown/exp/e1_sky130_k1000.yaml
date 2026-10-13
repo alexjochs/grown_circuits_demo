@@ -1,0 +1,8 @@
+# E1 toward the physical regime (LEGACY time model, see e1_base.yaml; run 2026-10-10): SKY130 nominal delays [3, 12] ticks (10 ps per tick), K = 1000 ticks per control
+# step (10.0 ns). Gate delays are now 1/83 to 1/333 of a step, so state across steps needs bistability, not a delay line.
+base: e1_base.yaml
+name: e1_sky130_k1000
+time: {tick: 1.0e-11, legacy_K: 1000}   # LEGACY: K fixed (old tasks.K)
+search:
+  operator:
+    delay_range: [3, 12]

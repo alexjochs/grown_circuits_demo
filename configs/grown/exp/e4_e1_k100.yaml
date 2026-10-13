@@ -1,0 +1,10 @@
+# E4 on E1's tasks at K = 100 (a 1 ns step, 8 to 33 gate delays): the controls' registers are delay chains of
+# K - L elements (unit exports: ~99 DELAYs per state bit; retimed: ~9 elements of 8-12 ticks), so this shows what the
+# clocked abstraction costs once a step is much longer than a gate (NOTES 2026-10-10 correction). Same data protocol
+# as e4_e1; compared with e1_sky130_k100 when its runs exist.
+base: e1_sky130_k100.yaml
+name: e4_e1_k100
+e4_base: ../e4_controls.yaml
+e4:
+  compare: [e1_sky130_k100]
+  search_physical: [e1_sky130_k100]

@@ -1,0 +1,54 @@
+# E3 at physical K (docs/grown_time.md, docs/experiments.md): the 32-task signal family with physical sample rates.
+# Each task draws its rate from 1 kHz to 1 MHz (1-2-5 steps, grown.tasks.signal.SAMPLE_RATES) after its kind
+# parameters, so the task set is E3's with real dt; K = round(dt / 10 ps) = 10^5 to 10^8. SKY130 nominal delays
+# ([3, 12] ticks, delay_clamp), uniform operator, imitation only, no DAgger, as e3_base.
+#
+# Energy (2026-10-12): no envelope is enforced. budget_mode ignore: event_rate 1e9 (~10 uW) is only the reference
+# against which over_budget is logged; no lane fails or is penalized for its event count. Energy per decision
+# (events_per_step, log scale 10..10^9 transitions per step, one bin per decade) is an archive axis, so the archive
+# keeps the whole energy frontier. No compute cap either (run first, observe, cap only where a lane cannot be
+# simulated): every lane is simulated to the end of its episode whatever it costs. A safety valve exists if needed,
+# time.sim_event_cap / sim_event_cap_rate (a compute guard, not physics: a capped lane is unscorable and logged as
+# `capped`), e.g. --set time.sim_event_cap_rate=1e13.
+#
+# Substrate: freerun multi-step runs, one process (all 32 tasks' children go to the engine together), every lane on
+# the job's CPU threads, the heaviest first by a 2-step probe (grown.sim.freerun_backend, placement). The GPU does not
+# help here: ~80 % of a generation's lanes oscillate and one lane runs ~100x slower on the GPU than on a CPU thread
+# (NOTES 2026-10-12/13); `placement: {mode: probe}` splits lanes between CPU and GPU.
+# `--set substrate.name=freerun_events` runs the reference wrapper (CPU).
+# Checkpoints every 10 generations and every hour (archive.save_every / save_seconds); a killed or requeued job
+# continues with `grown_search.py ... --checkpoint-resume`.
+# Arms: e3_phys_b1e5 (energy axis), e3_phys_noaxis_b1e5 (no energy axis), e3_phys_strobe_b1e5 (sample-clock
+# strobe input, energy axis).
+base: ../signal_family.yaml
+name: e3_phys_base
+workers: 1
+substrate:
+  name: freerun
+  backend: cuda
+  stimulus: multistep
+  placement: {mode: cpu, probe_steps: 2}     # every lane on the job's CPU threads, heaviest (2-step probe) first
+time:
+  tick: 1.0e-11
+  modulator_hz: 1.0e+7    # sigma-delta inputs: 10 MHz, pulses 10^4 ticks wide
+  event_budget: null
+  event_rate: 1.0e+9        # reference envelope (~10 uW), logged only
+  budget_mode: ignore
+  legacy_K: null
+tasks:
+  dt: [1.0e-6, 1.0e-3]    # sample periods drawn per task (1 MHz .. 1 kHz)
+search:
+  batch: 64
+  overlap: false          # one engine call per generation: two would each wait for their own busiest lane
+  operator:
+    delay_range: [3, 12]
+    delay_clamp: true
+archive:
+  axes:
+    - {name: n_gates, lo: 0, hi: 128, bins: 8, log: true}
+    - {name: cycle_frac, lo: 0.0, hi: 1.0, bins: 4}
+    - {name: events_per_step, lo: 10, hi: 1000000000, bins: 8, source: behavior, log: true}   # energy / decision
+    - {name: duty_mean, lo: 0.0, hi: 1.0, bins: 4, source: behavior}
+  save_every: 10
+  save_seconds: 3600
+status_every: 100
